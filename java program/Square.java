@@ -1,52 +1,100 @@
-import javax.swing.*;
-import java.awt.event.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 
-public class Square{
+public class Square extends JButton {
 
-    public static String GreenFrog = "images/GreenFrog.png";
-    public static String GreenFrog2 = "images/GreenFrog2.png";
-    public static String LilyPad = "images/LilyPad.png";
-    public static String RedFrog = "images/RedFrog.png";
-    public static String RedFrog2 = "images/RedFrog2.png";
-    public static String Water = "images/Water.png";
+    private static String PATH = "pieces/";
+    public static String GREEN_FORG = PATH + "GreenFrog.png";
+    public static String GREEN_FORG_SELECT = PATH + "GreenFrog2.png";
+    public static String RED_FORG = PATH + "RedFrog.png";
+    public static String RED_FORG_SELECT = PATH + "RedFrog2.png";
+    public static String WATER = PATH + "Water.png";
+    public static String LILY_PAD = PATH + "LilyPad.png";
 
-    private JButton btn;
-	private int location;
-	private String info;
+    // the position of current square
+    private final int r, c;
 
-	public Square(int location, String info) {
-		this.location = location;
-		btn = new JButton();
-		this.info = info;
-		ImageIcon icon = new ImageIcon(this.info);
-		btn.setIcon(icon);
+    public Square(int r, int c, String type) {
+        this.r = r;
+        this.c = c;
+        setType(type);
+    }
 
-	}
+    public String toString() {
+        return String.format("%d %d %s", r, c, getType());
+    }
 
-	public JButton getBtn() {
-		return btn;
-	}
+    // the type of current square
+    private String type;
 
-	public String getInfo() {
-		return info;
-	}
+    public void setType(String image) {
+        this.type = image;
+        ImageIcon icon = new ImageIcon(image);
+        this.setIcon(icon);
+    }
 
-	public void setInfo(String info) {
-		this.info = info;
-		ImageIcon icon = new ImageIcon(this.info);
-		btn.setIcon(icon);
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void moveTo(Square squ) {
-		squ.setInfo(this.info);
-		this.setInfo(Water);
+    /**
+     * move to the target square
+     * @param squareTable
+     * @param target
+     * @return 
+     */
+    public boolean moveTo(Square[][] squareTable, Square target) {
 
-	}
+        int r1 = target.r;
+        int c1 = target.c;
 
-	public boolean canMoveto(Square squ) {
-		if (squ.getInfo().equals(Water)) {
-			return true;
-		} else
-			return false;
-	}
+        if (!(r == r1 && Math.abs(c - c1) == 4
+                || c == c1 && Math.abs(r - r1) == 4
+                || Math.abs(c - c1) == 2 && Math.abs(r - r1) == 2)) {
+            // the current position and target position is NOT horizontally, vertically or diagonally
+            return false;
+        }
+        int midr = (r1 + r) / 2;
+        int midc = (c1 + c) / 2;
+
+        if (!squareTable[midr][midc].type.equals(GREEN_FORG)
+                && !squareTable[midr][midc].type.equals(GREEN_FORG_SELECT)) {
+            // if there is NO green forg to jump over
+            return false;
+        }
+
+        if (!squareTable[r1][c1].type.equals(LILY_PAD)) {
+            // destination square MUST be LilyPad.
+            return false;
+        }
+        // make a jump
+        String thisType = getType();
+        this.setType(LILY_PAD);
+        squareTable[midr][midc].setType(LILY_PAD);
+        squareTable[r1][c1].setType(thisType);
+
+        // System.out.println("Jump Success");
+        return true;
+    }
+
+    /**
+     * select select image
+     * @param b 
+     */
+    public void setSelected(boolean b) {
+
+        if (b == true) {
+            if (this.getType().equals(GREEN_FORG)) {
+                setType(GREEN_FORG_SELECT);
+            } else if (this.getType().equals(RED_FORG)) {
+                setType(RED_FORG_SELECT);
+            }
+        } else if (this.getType().equals(GREEN_FORG_SELECT)) {
+            setType(GREEN_FORG);
+        } else if (this.getType().equals(RED_FORG_SELECT)) {
+            setType(RED_FORG);
+        }
+
+    }
+
 }
